@@ -1,16 +1,16 @@
 {
   "name": "bootjs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A web framework based on Node.js + Express.js",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "bootjs-common": "^0.1.23",
-    "bootjs-exception": "^0.1.32",
-    "bootjs-config": "^0.2.0",
-    "bootjs-auth": "^0.2.5",
+    "bootjs-common": "^0.1.0",
+    "bootjs-exception": "^0.1.0",
+    "bootjs-config": "^0.1.0",
+    "bootjs-auth": "^0.1.0",
     "co": "^4.6.0",
     "is-type-of": "^1.0.0",
     "lodash": "^4.17.4"
