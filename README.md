@@ -40,7 +40,7 @@ Or you can make a package.json as below:
 ```
 
 ## Step 2: Edit config.js
-```
+``` javascript
 'use strict';
 module.exports = {
     baseDir: __dirname + '/app/src/' // Mandatory item.
