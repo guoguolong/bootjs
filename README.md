@@ -16,10 +16,9 @@ package.json
 ```
 ## Step 1: Dependencies Intallation.
 
-``` bash
-cnpm install express
-cnpm install bootjs
-```
+>cnpm install express
+>cnpm install bootjs
+
 Or you can make a package.json as below:
 ``` json
 {
