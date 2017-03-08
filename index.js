@@ -469,7 +469,8 @@ module.exports = function(app, pluginConf) {
             }
 
         },
-        init: function(appConfig) {
+        init: function(appConfig, options) {
+            options = options || {};
             pluginObj = this;
             // 正规化插件配置文件
             if (!normalizePluginConfig()) {
@@ -490,6 +491,11 @@ module.exports = function(app, pluginConf) {
                 this.setAppContext('config', appConfig);
             }
             this.setAppContext('createService', pluginObj.createService);
+            if (options.contexts) {
+                for (let name in options.contexts) {
+                    this.setAppContext(name, options.contexts[name]);
+                }
+            }
 
             // 预加载bundle.
             preLoadBundles(this);
