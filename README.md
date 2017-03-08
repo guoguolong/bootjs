@@ -64,7 +64,6 @@ bootjs.init();
 // 添加bootjs的路由规则.
 bootjs.addRoutes(); 
 
-// global.bootjs = bootjs; 如有需要，可设置为全局变量.
 app.listen(5000, () => {
     console.log('A http server started at localhost:5000.');
 }); 
