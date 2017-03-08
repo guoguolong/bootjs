@@ -86,6 +86,6 @@ module.exports = class {
 Enter project folder then run 
 >node app.js
 
-Go to browser and input <http://localhost:5000>, you will got a page that show 'Hello bootjs'.
+Go to browser and input <http://localhost:5000>, you will got a page that show 'Hello Bootjs'.
 
 
