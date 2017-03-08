@@ -4,7 +4,7 @@ A lightweight web framework based on Node.js and Express.js
 
 [MIT](LICENSE)
 
-Below is a minimal bootjs application, Suppose we have a project folder named 'hello', here is the project folder layout:
+Below is a minimal bootjs web application, Suppose we have a project named 'hello', here is the project folder layout:
 ```
 [app]
   |_config.js // configuration file.
@@ -14,7 +14,7 @@ Below is a minimal bootjs application, Suppose we have a project folder named 'h
 app.js // bootstrap file.
 package.json
 ```
-### Step 1: Dependencies Intallation.
+## Step 1: Dependencies Intallation.
 
 ```
 cnpm install express
@@ -39,7 +39,7 @@ Or you can make a package.json as below:
 }
 ```
 
-### Step 2: Edit config.js
+## Step 2: Edit config.js
 ```
 'use strict';
 module.exports = {
@@ -47,7 +47,7 @@ module.exports = {
 }
 ```
 
-### Step 3: Edit app.js
+## Step 3: Edit app.js
 
 ```
 'use strict';
@@ -71,9 +71,9 @@ app.listen(5000, () => {
 }); 
 ```
 
-### Step 4: Write a sample.
+## Step 4: Write a sample.
 
-#### Create a app/src/IndexController.js as below:
+### Create a app/src/IndexController.js as below:
 ```
 'use strict';
 module.exports = class {
@@ -83,7 +83,7 @@ module.exports = class {
 }
 ```
 
-#### Start boojs server and browse the page.
+### Start boojs server and access page.
 
 Enter project folder and run 
 >node app.js
