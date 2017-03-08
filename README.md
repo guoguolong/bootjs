@@ -1,8 +1,8 @@
-# bootjs
+# bootjs 
 
 A lightweight web framework based on Node.js and Express.js
-![bootjsl ogo](https://github.com/guoguolong/bootjs/tree/master/docs/logo-100.png)
-[MIT](LICENSE)
+
+![bootjs logo](https://github.com/guoguolong/bootjs/raw/master/docs/logo-100.png)
 
 Below is a minimal bootjs web application, Suppose we have a project named 'hello', here is the project folder layout:
 ```
@@ -88,4 +88,4 @@ Enter project folder then run
 
 Go to browser and input <http://localhost:5000>, you will got a page that show 'Hello Bootjs'.
 
-
+[MIT](LICENSE)
