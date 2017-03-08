@@ -1,4 +1,4 @@
-# bootjs 
+# bootjs ![bootjs logo](https://github.com/guoguolong/bootjs/raw/master/docs/logo-100.png)
 
 A lightweight web framework based on Node.js and Express.js
 
