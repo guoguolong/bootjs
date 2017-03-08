@@ -32,7 +32,7 @@ Or you can make a package.json as below:
   "author": "Allen Guo",
   "license": "MIT",
   "dependencies": {
-    "bootjs": "^0.1.2",
+    "bootjs": "^0.1.5",
     "express": "^4.14.1"
   }
 }
