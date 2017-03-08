@@ -61,7 +61,7 @@ const bootjs = Bootjs(app, config);
 // 初始化bootjs
 bootjs.init();
 
-// 添加light-mvc的路由规则.
+// 添加bootjs的路由规则.
 bootjs.addRoutes(); 
 
 // global.bootjs = bootjs; 如有需要，可设置为全局变量.
@@ -84,9 +84,9 @@ module.exports = class {
 
 ### Start boojs server and access page.
 
-Enter project folder and run 
+Enter project folder then run 
 >node app.js
 
-Go to your browser and input http://localhost:5000, you will got a page display 'Hello bootjs' on it.
+Go to browser and input http://localhost:5000, you will got a page that show 'Hello bootjs'.
 
 
