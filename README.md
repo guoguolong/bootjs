@@ -16,12 +16,12 @@ package.json
 ```
 ## Step 1: Dependencies Intallation.
 
-```
+``` bash
 cnpm install express
 cnpm install bootjs
 ```
 Or you can make a package.json as below:
-```
+``` json
 {
   "name": "hello",
   "version": "1.0.0",
@@ -49,7 +49,7 @@ module.exports = {
 
 ## Step 3: Edit app.js
 
-```
+``` node
 'use strict';
 
 const express = require('express');
@@ -74,7 +74,7 @@ app.listen(5000, () => {
 ## Step 4: Write a sample.
 
 ### Create a app/src/IndexController.js as below:
-```
+``` node 
 'use strict';
 module.exports = class {
     index() {
