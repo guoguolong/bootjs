@@ -2,7 +2,7 @@
 
 A lightweight web framework based on Node.js and Express.js
 
-![bootjs logo](https://github.com/guoguolong/bootjs/raw/master/docs/logo-100.png)
+![bootjs logo](https://github.com/guoguolong/bootjs/raw/master/docs/logo-300.png)
 
 Below is a minimal bootjs web application, Suppose we have a project named 'hello', here is the project folder layout:
 ```
