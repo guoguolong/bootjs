@@ -423,6 +423,10 @@ module.exports = function(app, pluginConf) {
         },
         importModel: importModel,
         loadView: loadView,
+        loadPackedViewJsP: function(jsFile) {
+            let baseDir = pluginObj.config.packedViewJsBaseDir || '';
+            return require(path.resolve(baseDir + jsFile))();
+        },
         addRoute: addRoute,
         addRoutes: function() {
             pluginObj = this;
@@ -474,7 +478,7 @@ module.exports = function(app, pluginConf) {
             pluginObj = this;
             // 正规化插件配置文件
             if (!normalizePluginConfig()) {
-                console.error('[Error] LightMvc configuration [baseDir] is missed.');
+                console.error('[Error] bootjs configuration [baseDir] is missed.');
                 return false; // 配置文件非法，加载失败
             }
             // 再次设置views的查找根目录
