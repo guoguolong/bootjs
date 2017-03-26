@@ -17,6 +17,7 @@ package.json
 ## Step 1: Dependencies Intallation.
 
 >cnpm install express
+>
 >cnpm install bootjs
 
 Or you can make a package.json as below:
@@ -58,10 +59,10 @@ const config = require('./config.js');
 
 const bootjs = Bootjs(app, config);
 
-// 初始化bootjs
+// initialize bootjs.
 bootjs.init();
 
-// 添加bootjs的路由规则.
+// add routes to bootjs.
 bootjs.addRoutes(); 
 
 app.listen(5000, () => {
@@ -86,6 +87,6 @@ module.exports = class {
 Enter project folder then run 
 >node app.js
 
-Go to browser and input <http://localhost:5000>, you will got a page that show 'Hello Bootjs'.
+Go to browser and enter <http://localhost:5000>, you will got a page which say 'Hello Bootjs'.
 
 [MIT](LICENSE)
