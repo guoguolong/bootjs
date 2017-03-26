@@ -1,6 +1,6 @@
 {
   "name": "bootjs",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A web framework based on Node.js + Express.js",
   "main": "index.js",
   "scripts": {

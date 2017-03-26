@@ -24,6 +24,20 @@ module.exports = function(app, pluginConf) {
         });
     }
 
+    function normalizeMappingConfig() { // 整理urlsMapping配置格式.
+        Object.keys(pluginConf.router.urlsMapping).forEach(function(key) {
+            let mapping = pluginConf.router.urlsMapping[key];
+            if (_.isString(mapping)) {
+                mapping = {
+                    target: mapping
+                }
+            }
+            mapping.source = mapping.source || key;
+            pluginConf.router.urlsMapping[key] = parseRouteItem(mapping);
+        });
+
+    }
+
     function normalizePluginConfig() {
         if (!pluginConf.baseDir) return false;
 
@@ -35,18 +49,6 @@ module.exports = function(app, pluginConf) {
         
         pluginConf.name = pluginConf.name || 'bootjs';
         pluginConf.env = pluginConf.env || 'prod';
-
-        // 整理urlsMapping配置格式.
-        Object.keys(pluginConf.router.urlsMapping).forEach(function(key) {
-            let mapping = pluginConf.router.urlsMapping[key];
-            if (_.isString(mapping)) {
-                mapping = {
-                    target: mapping
-                }
-            }
-            mapping.source = mapping.source || key;
-            pluginConf.router.urlsMapping[key] = parseRouteItem(mapping);
-        });
 
         // 路由的默认设置检查.
         pluginConf.router.default.bundleName = pluginConf.router.default.bundleName || '';
@@ -430,6 +432,7 @@ module.exports = function(app, pluginConf) {
         addRoute: addRoute,
         addRoutes: function() {
             pluginObj = this;
+            normalizeMappingConfig();
             // 注入forward方法到res.
             app.use(function(req, res, next) {
                 res.forward = function(url, params) {
