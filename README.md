@@ -14,7 +14,7 @@ Below is a minimal bootjs web application. Suppose we have a project named 'hell
 app.js // bootstrap file.
 package.json
 ```
-## Step 1: Dependencies Intallation.
+## Step 1: Intallation.
 
 >cnpm install express
 >
