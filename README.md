@@ -1,4 +1,3 @@
-# bootjs
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/guoguolong/bootjs/master/LICENSE)
 
 A lightweight web framework based on Node.js and Express.js
