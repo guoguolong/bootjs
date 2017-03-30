@@ -213,9 +213,9 @@ module.exports = function(app, pluginConf) {
     function callAction(mvcObj) {
         let error = false;
         // 加载找到的模块文件，并执行对应的action方法.
-        let ctrlObj = mvcObj.ctrlObj;
         let ctx = RequestContext(pluginObj, mvcObj);
         // 便利方法
+        let ctrlObj = mvcObj.ctrlObj;
         ctrlObj.req = mvcObj.req;
         ctrlObj.res = mvcObj.res;
         ctrlObj.ctx = ctx;
