@@ -503,12 +503,8 @@ module.exports = function(app, pluginConf) {
                     this.setAppContext(name, options.contexts[name]);
                 }
             }
-
-            // 预加载bundle.
-            preLoadBundles(this);
-
-            // 全局注入一些方法.
-            global.importModel = importModel;
+            global.importModel = importModel; // 全局注入一些方法.
+            preLoadBundles(this); // 预加载bundle.
             return true;
         },
         run: function() {
