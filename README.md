@@ -23,7 +23,7 @@ Or you can create a package.json as below:
   "author": "Allen Guo",
   "license": "MIT",
   "dependencies": {
-    "bootjs": "^0.1.9",
+    "bootjs": "^0.1.10",
     "express": "^4.14.1"
   }
 }
