@@ -42,6 +42,7 @@ module.exports = function(app, pluginConf) {
     function normalizePluginConfig() {
         if (!pluginConf.baseDir) return false;
 
+        pluginConf.projBaseDir = pluginConf.projBaseDir || path.join(pluginConf.baseDir, '../../');
         // 顶层节点默认值.
         pluginConf.router = pluginConf.router || {};
         pluginConf.router.urlsMapping = pluginConf.router.urlsMapping || {};
@@ -80,6 +81,9 @@ module.exports = function(app, pluginConf) {
         // views设定
         pluginConf.views = pluginConf.views || {};
         pluginConf.views.engine = pluginConf.views.engine || 'ejs';
+        pluginConf.views.nunjucks = pluginConf.views.nunjucks || {
+            autoescape: true
+        };
 
         pluginConf.thirdPartyBundle = pluginConf.thirdPartyBundle || {};
         pluginConf.thirdPartyBundle.prefixes = pluginConf.thirdPartyBundle.prefixes || ['bootjs-bundle-', ''];
