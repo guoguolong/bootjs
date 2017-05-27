@@ -8,6 +8,7 @@ const _ = require('lodash');
 const isGenerator = require('is-type-of').generatorFunction;
 const RequestContext = require('./lib/RequestContext');
 const BundleLoader = require('./lib/BundleLoader');
+const nunjucks = require('nunjucks');
 
 module.exports = function(app, pluginConf) {
     let pluginObj = null;
@@ -55,8 +56,12 @@ module.exports = function(app, pluginConf) {
         pluginConf.router.default.controllerName = pluginConf.router.default.controllerName || 'index';
         pluginConf.router.default.actionName = pluginConf.router.default.actionName || 'index';
 
-        // 目录布局：bundles,controllers,models,views,config
+        // 目录布局：bundles,controllers,models,views,config,middlewares
         pluginConf.layout = pluginConf.layout || {};
+
+        pluginConf.layout.middlewares = pluginConf.layout.middlewares || {};
+        pluginConf.layout.middlewares.baseDir = pluginConf.layout.middlewares.baseDir || (pluginConf.baseDir + 'middlewares/');
+
         pluginConf.layout.controllers = pluginConf.layout.controllers || {};
         pluginConf.layout.controllers.baseDir = pluginConf.layout.controllers.baseDir || (pluginConf.baseDir + 'controllers/');
 
@@ -429,6 +434,24 @@ module.exports = function(app, pluginConf) {
             let baseDir = pluginObj.config.packedViewJsBaseDir || '';
             return require(path.resolve(baseDir + jsFile))();
         },
+        loadMiddlewares: function(appConfig, options) {
+            options = options || {};
+            let mwBaseDir = options.baseDir || pluginConf.layout.middlewares.baseDir;
+            if (fs.existsSync(mwBaseDir)) {
+                let dir = fs.readdirSync(mwBaseDir);
+                _.sortBy(dir);
+                dir.forEach(function(item) { // 加载扩名为.js的文件.
+                    let stats = fs.statSync(path.join(mwBaseDir, item));
+                    if (stats.isFile() && item.match(/\.js$/)) {
+                        let Ware = require(path.join(mwBaseDir, item));
+                        let ware = Ware(appConfig, pluginObj);
+                        if (ware) {
+                            app.use(ware);
+                        }
+                    }
+                });
+            }
+        },
         addRoute: addRoute,
         addRoutes: function() {
             pluginObj = this;
@@ -488,6 +511,11 @@ module.exports = function(app, pluginConf) {
             app.set('views', pluginConf.layout.views.baseDir);
             app.set('view engine', pluginConf.views.engine);
             
+            const nunjucksEnv = nunjucks.configure([pluginConf.layout.views.baseDir, pluginConf.projBaseDir], pluginConf.views.nunjucks);
+            this.setAppContext('nunjucksEnv', nunjucksEnv);
+            app.engine('njk', nunjucks.render);
+            app.engine('ejs', require('ejs').renderFile);
+
             // 加载认证模块.
             if (pluginConf.auth.enabled) {
                 this.setAppContext('UserAuth', require(pluginConf.auth.module)(pluginConf.auth));
