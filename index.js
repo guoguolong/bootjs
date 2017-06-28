@@ -48,7 +48,7 @@ module.exports = function(app, pluginConf) {
         pluginConf.router.urlsMapping = pluginConf.router.urlsMapping || {};
         pluginConf.router.default = pluginConf.router.default || {};
         pluginConf.router.urlsPrefix = pluginConf.router.urlsPrefix || [];
-        
+
         pluginConf.name = pluginConf.name || 'bootjs';
         pluginConf.env = pluginConf.env || 'prod';
 
@@ -96,7 +96,7 @@ module.exports = function(app, pluginConf) {
             dir.forEach(function(name) {
                 let stats = fs.statSync(pluginConf.layout.bundles.baseDir + name);
                 if (!name.match(/^\./) && stats.isDirectory()) {
-                    pluginConf.bundles[name] = pluginConf.bundles[name] ||  {};
+                    pluginConf.bundles[name] = pluginConf.bundles[name] || {};
                     Object.assign(pluginConf.bundles[name], {
                         baseDir: fs.realpathSync(pluginConf.layout.bundles.baseDir + name),
                         isLoaded: false,
@@ -116,7 +116,9 @@ module.exports = function(app, pluginConf) {
 
         // 插件：exception
         if (typeof pluginConf.exception !== 'object') {
-            pluginConf.exception = { enabled: pluginConf.exception};
+            pluginConf.exception = {
+                enabled: pluginConf.exception
+            };
         }
         // pluginConf.exception = pluginConf.exception || { enabled: true};
         if (pluginConf.exception.enabled !== false) {
@@ -137,19 +139,19 @@ module.exports = function(app, pluginConf) {
         }
         if (typeof req.params === 'object') {
             Object.keys(req.params).forEach(function(k) {
-                let regexp = new RegExp('\\$\\{'+ k + '\\}', 'g');
+                let regexp = new RegExp('\\$\\{' + k + '\\}', 'g');
                 url = url.replace(regexp, req.params[k]);
             });
         }
         try {
             url = decodeURI(url);
-        } catch(e) {
-            console.warn('Invalid decodeURI:' , url);
+        } catch (e) {
+            console.warn('Invalid decodeURI:', url);
         }
         let urlSegs = url.split('?'); // 去掉get参数.
         url = urlSegs[0].replace(/^\/*/, '').replace(/\/*$/, ''); // 去掉首部和尾部/符号.
 
-        let mvcObj = new (MvcObject)(pluginObj);
+        let mvcObj = new(MvcObject)(pluginObj);
         mvcObj.originalUrl = mvcObj.url = url;
         mvcObj.initParams = mapping.params;
         mvcObj.req = req;
@@ -187,7 +189,7 @@ module.exports = function(app, pluginConf) {
                                 bundlePath = pluginConf.localModuleBaseDir + bundlePath;
                                 bundlePath = path.normalize(bundlePath);
                             }
-                            console.warn('[WARN] Failed to load bundle "' +  bundlePath + '", ignored it.');
+                            console.warn('[WARN] Failed to load bundle "' + bundlePath + '", ignored it.');
                         }
                         return error; // 不显示加载bundle错误.
                     }
@@ -195,7 +197,7 @@ module.exports = function(app, pluginConf) {
                 if (error) return error;
             } else {
                 res.statusCode = 404;
-                return error;                
+                return error;
             }
         }
 
@@ -243,7 +245,7 @@ module.exports = function(app, pluginConf) {
         if (typeof actionMethod === 'function') {
             if (/^_/.test(mvcObj['actionName'])) {
                 return new Error(mvcObj['actionName'] + ' is not valid action method.');
-            } 
+            }
             if (_.isFunction(ctrlObj.__construct)) {
                 ctrlObj.__construct();
             }
@@ -257,8 +259,8 @@ module.exports = function(app, pluginConf) {
             function isPromise(obj) {
                 obj = typeof obj === 'object' && obj || {};
                 return typeof obj.then === 'function';
-            }            
-            if (isPromise(dataRes)) dataRes.catch(err=> mvcObj.next(err));
+            }
+            if (isPromise(dataRes)) dataRes.catch(err => mvcObj.next(err));
 
             if (dataRes && typeof dataRes === 'object' && (!isPromise(dataRes))) {
                 if (dataRes.constructor.name === 'ApiResponse') { // 渲染 json view.
@@ -281,9 +283,13 @@ module.exports = function(app, pluginConf) {
     function addRoute(mapping) {
         // mapping.source 可能是string，也可能是RegExp;
         mapping.method = mapping.method || 'all';
-        mapping.auth = mapping.auth || {enabled: false};
+        mapping.auth = mapping.auth || {
+            enabled: false
+        };
         if (mapping.auth === true) {
-            mapping.auth = {enabled: true};
+            mapping.auth = {
+                enabled: true
+            };
         } else if (typeof mapping.auth === 'function') {
             mapping.auth = {
                 enabled: true,
@@ -291,20 +297,16 @@ module.exports = function(app, pluginConf) {
             };
         }
         mapping.auth.module = mapping.auth.module || pluginConf.auth.module;
-        let tailMiddleware = function(req, res, next) {
-            if (mapping.isAuto === true) mapping.target = req.url;
-            let err = loadMVC(mapping, req, res, next);
-            if (err instanceof Error) {
-                next(err);
-            }
-        };
+
+        let routeArgs = [];
+        routeArgs.push(mapping.source);
         if (mapping.auth.enabled) {
             if (!mapping.auth.middleware) {
                 mapping.auth.middleware = function(req, res, next) {
-                    return co(function* (){
+                    return co(function*() {
                         let hasLogin = yield req.auth.hasLoginP();
                         if (hasLogin) {
-                            return next();                        
+                            return next();
                         }
 
                         let returnUrl;
@@ -318,14 +320,27 @@ module.exports = function(app, pluginConf) {
                         } else {
                             returnUrl = mapping.auth.webFailureUrl || pluginConf.auth.webFailureUrl || req.auth.getLoginUrl();
                         }
-                        return res.end('<script>window.location = "' + returnUrl + '";</script>');
+                        res.setHeader("Content-Type", "text/html");
+                        return res.end('<!DOCTYPE html><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></head><script>window.location = "' + returnUrl + '";</script></head></html>');
                     });
                 };
-            }
-            app[mapping.method](mapping.source, mapping.auth.middleware, tailMiddleware);
-        } else {
-            app[mapping.method](mapping.source, tailMiddleware);
+            };
+            routeArgs.push(mapping.auth.middleware);
         }
+        if (mapping.middlewares && !Array.isArray(mapping.middlewares)) {
+            mapping.middlewares = [mapping.middlewares];
+        }
+        if (mapping.middlewares && mapping.middlewares.length > 0) {
+            routeArgs = routeArgs.concat(mapping.middlewares);
+        }
+        routeArgs.push(function(req, res, next) {
+            if (mapping.isAuto === true) mapping.target = req.url;
+            let err = loadMVC(mapping, req, res, next);
+            if (err instanceof Error) {
+                next(err);
+            }
+        });
+        app[mapping.method].apply(app, routeArgs);
     }
 
     /**
@@ -379,7 +394,7 @@ module.exports = function(app, pluginConf) {
             if (value) {
                 appCtx[name] = value;
             } else {
-                if(typeof name === 'object') {
+                if (typeof name === 'object') {
                     let props = name;
                     for (let key in props) {
                         appCtx[key] = props[key];
@@ -396,7 +411,9 @@ module.exports = function(app, pluginConf) {
         },
         createContext: function(req, res, next) {
             return RequestContext(pluginObj, {
-                req, res, next
+                req,
+                res,
+                next
             });
         },
         createService: function(serviceName, bundleName, params) {
@@ -410,12 +427,12 @@ module.exports = function(app, pluginConf) {
                     bundleName = arguments[1].bundleName;
                     params = arguments[1].params;
                 }
-            }            
+            }
             let SrvClass = importModel(serviceName, bundleName);
             if (!_.isFunction(SrvClass)) {
                 throw new Error(serviceName + ' is not found.');
             }
-            let srvObj = new (SrvClass);
+            let srvObj = new(SrvClass);
             srvObj.params = {};
             srvObj.ctx = pluginObj.getAppContext();
             if (this.ctx) { // 动态指定上下文
@@ -495,7 +512,10 @@ module.exports = function(app, pluginConf) {
                 require(jsFile)(pluginObj);
             });
             // 3. 自动映射路由.
-            addRoute({source: '/*', isAuto: true});
+            addRoute({
+                source: '/*',
+                isAuto: true
+            });
 
             // 4. 可选加载其他路由
             if (pluginConf.exception.enabled) {
@@ -514,7 +534,7 @@ module.exports = function(app, pluginConf) {
             // 再次设置views的查找根目录
             app.set('views', pluginConf.layout.views.baseDir);
             app.set('view engine', pluginConf.views.engine);
-            
+
             const nunjucksEnv = nunjucks.configure([pluginConf.layout.views.baseDir, pluginConf.projBaseDir], pluginConf.views.nunjucks);
             this.setAppContext('nunjucksEnv', nunjucksEnv);
             app.engine('njk', nunjucks.render);
