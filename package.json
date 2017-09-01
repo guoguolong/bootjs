@@ -1,6 +1,6 @@
 {
   "name": "bootjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A web framework based on Node.js + Express.js",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "dependencies": {
     "bootjs-common": "^0.1.2",
     "bootjs-exception": "^0.1.6",
-    "bootjs-config": "^1.1.0",
+    "bootjs-config": "^1.0.0",
     "bootjs-auth": "^0.1.0",
     "co": "^4.6.0",
     "is-type-of": "^1.0.0",
