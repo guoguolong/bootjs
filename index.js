@@ -10,6 +10,33 @@ const RequestContext = require('./lib/RequestContext');
 const BundleLoader = require('./lib/BundleLoader');
 const nunjucks = require('nunjucks');
 
+function setupAsset(cfg) {
+    cfg = cfg || {};
+    return function getAssetUrl(url, options) {
+        const urler = require('url');
+        options = options || {};
+        if (typeof options === 'string') {
+            options = {
+                appId: options
+            }
+        }
+        options.appId = options.appId || 'default';
+        cfg[options.appId] = cfg[options.appId] || {};
+        if (typeof cfg[options.appId] === 'string') {
+            cfg[options.appId] = {
+                baseUrl: cfg[options.appId]
+            }
+        }
+
+        let baseUrl = options.baseUrl || cfg[options.appId].baseUrl || '';
+
+        if(baseUrl && !baseUrl.match(/\/$/)) { // 结尾必须是/
+            baseUrl += '/';
+        }
+        return urler.resolve(baseUrl, url);
+    }
+}
+
 module.exports = function(app, pluginConf) {
     let pluginObj = null;
     let appCtx = {};
@@ -18,8 +45,14 @@ module.exports = function(app, pluginConf) {
         let bundleLoader = BundleLoader(bootjs);
         Object.keys(pluginConf.bundles).forEach(function(bundleName) {
             if (pluginConf.bundles[bundleName].preLoad === true) {
-                pluginConf.thirdPartyBundle.prefixes.forEach(function(prefix) {
-                    bundleLoader.load(bundleName, prefix);
+                pluginConf.thirdPartyBundle.prefixes.some(function(prefix) {
+                    let bundleConf = null;
+                    try {
+                        bundleConf = bundleLoader.load(bundleName, prefix);
+                    } catch(e) {
+                        console.error(e.stack);
+                    }
+                    return bundleConf && bundleConf.isLoaded || false;
                 });
             }
         });
@@ -52,6 +85,7 @@ module.exports = function(app, pluginConf) {
         pluginConf.name = pluginConf.name || 'bootjs';
         pluginConf.env = pluginConf.env || 'prod';
 
+        pluginConf.assets = pluginConf.assets || {};
         // 路由的默认设置检查.
         pluginConf.router.default.bundleName = pluginConf.router.default.bundleName || '';
         pluginConf.router.default.controllerName = pluginConf.router.default.controllerName || 'index';
@@ -87,6 +121,7 @@ module.exports = function(app, pluginConf) {
 
         pluginConf.thirdPartyBundle = pluginConf.thirdPartyBundle || {};
         pluginConf.thirdPartyBundle.prefixes = pluginConf.thirdPartyBundle.prefixes || ['bootjs-bundle-', ''];
+        pluginConf.thirdPartyBundle.prefixes.push('*');
 
         // bundle设定
         pluginConf.bundles = pluginConf.bundles || {};
@@ -235,7 +270,8 @@ module.exports = function(app, pluginConf) {
         ctrlObj.bundle = ctx.bundle;
 
         ctrlObj.res.locals.__viewPath__ = mvcObj.viewPath; // 给bootjs-render的autoViewPath使用.
-        ctrlObj.res.locals.AssetUrl = ctx.bundle.getAssetUrl;
+        ctrlObj.res.locals.asset_url = ctx.bundle.getAssetUrl;
+        ctrlObj.res.locals.auto_asset_url = ctx.bundle.getAutoAssetUrl;
         ctrlObj.res.locals.req = mvcObj.req;
         ctrlObj.res.locals.res = mvcObj.res;
         ctrlObj.res.locals.ctx = ctx;
@@ -370,8 +406,28 @@ module.exports = function(app, pluginConf) {
 
     function importModel(modelJs, bundleName) {
         let baseDir = pluginConf.layout.models.baseDir;
+        if (_.isObject(arguments[1])) {
+            bundleName = arguments[1].bundleName || arguments[1].bundle;
+            moduleName = arguments[1].moduleName || arguments[1].module;
+        }
+
         if (typeof bundleName === 'string' && bundleName !== '') {
-            baseDir = pluginConf.bundles[bundleName].baseDir + '/models/';
+            if (!pluginConf.bundles[bundleName]) {
+                moduleName = bundleName;
+                // throw new Error('The bundle ' + bundleName + ' is not existed');
+            } else {
+                moduleName = null;
+                baseDir = pluginConf.bundles[bundleName].baseDir + '/models/';
+            }
+        } 
+        if (typeof moduleName === 'string' && moduleName !== '') {
+            let moduleObj = require(moduleName);
+            if (typeof moduleObj === 'function') {
+                moduleObj = moduleObj();
+            }
+            if (moduleObj.modelBaseDir) {
+                baseDir = moduleObj.modelBaseDir;
+            }
         }
         let pkg = common.package([path.normalize(baseDir)]);
         return pkg.import(modelJs);
@@ -417,18 +473,21 @@ module.exports = function(app, pluginConf) {
             });
         },
         createService: function(serviceName, bundleName, params) {
+            let moduleName = null;
             if (pluginConf.services && pluginConf.services[serviceName]) { // 有配置就读取配置
                 let serviceConf = pluginConf.services[serviceName];
-                serviceName = serviceConf.moduleName || serviceName;
-                bundleName = serviceConf.bundleName || bundleName;
+                serviceName = serviceConf.serviceName || serviceName;
+                bundleName = serviceConf.bundleName || serviceConf.bundle || bundleName;
+                moduleName = serviceConf.moduleName || serviceConf.module;
                 params = serviceConf.params || params;
             } else { // 读取参数
                 if (_.isObject(arguments[1])) {
-                    bundleName = arguments[1].bundleName;
+                    bundleName = arguments[1].bundleName || arguments[1].bundle;
+                    moduleName = arguments[1].moduleName || arguments[1].module;
                     params = arguments[1].params;
                 }
             }
-            let SrvClass = importModel(serviceName, bundleName);
+            let SrvClass = importModel(serviceName, bundleName, moduleName);
             if (!_.isFunction(SrvClass)) {
                 throw new Error(serviceName + ' is not found.');
             }
@@ -451,47 +510,76 @@ module.exports = function(app, pluginConf) {
         },
         importModel: importModel,
         loadView: loadView,
-        loadPackedViewJsP: function(jsFile) {
+        loadPackedViewJsP: function(jsFile, args) {
             let baseDir = pluginObj.config.packedViewJsBaseDir || '';
-            return require(path.resolve(baseDir + jsFile))();
+            return require(path.resolve(baseDir + jsFile))(args);
         },
+        addRoute: addRoute,
         loadMiddlewares: function(appConfig, options) {
+            /**
+             * options = {
+             *     baseDir: 要加载的中间件文件所在目录.
+             *     middlewares: 要插接的中间件文件列表和位置.
+             * }
+             */
+            function loadMiddleware(mwPath) {
+                if (!Array.isArray(mwPath)) mwPath = [mwPath];
+                for (let key in mwPath) {
+                    let Ware = require(mwPath[key]);
+                    let ware = Ware(appConfig, pluginObj);
+                    if (ware) {
+                        app.use(ware);
+                    }
+                }
+            }
             options = options || {};
+            options.middlewares = options.middlewares || {};
+            options.middlewares.mode = options.middlewares.mode || 'insert';
+            let mwPlugins = options.middlewares.list || {};
+
             let mwBaseDir = options.baseDir || pluginConf.layout.middlewares.baseDir;
+            // 如果是replace模式，读取options指定的 或者 pluginConf的middlewares的baseDir
+            if (options.middlewares.mode === 'replace') {
+                mwBaseDir = options.middlewares.baseDir || pluginConf.layout.middlewares.baseDir;
+            }
             if (fs.existsSync(mwBaseDir)) {
                 let dir = fs.readdirSync(mwBaseDir);
-                _.sortBy(dir);
+                _.sortBy(dir); // 按照Ascill码顺序加载之.
+
+                mwPlugins['__start__'] && loadMiddleware(mwPlugins['__start__']); //如果在中间件最前边有一个中间件插入，加载之
                 dir.forEach(function(item) { // 加载扩名为.js的文件.
                     let stats = fs.statSync(path.join(mwBaseDir, item));
                     if (stats.isFile() && item.match(/\.js$/)) {
-                        let Ware = require(path.join(mwBaseDir, item));
-                        let ware = Ware(appConfig, pluginObj);
-                        if (ware) {
-                            app.use(ware);
-                        }
+                        loadMiddleware(path.join(mwBaseDir, item));
+                        mwPlugins[item] && loadMiddleware(mwPlugins[item]);
                     }
                 });
+                mwPlugins['__end__'] && loadMiddleware(mwPlugins['__end__']); //如果在中间件最后边有一个中间件加入，加载之
             }
         },
-        addRoute: addRoute,
         addRoutes: function() {
             pluginObj = this;
             normalizeMappingConfig();
             // 注入forward方法到res.
+            function forward(url, params) {
+                if (this.res.mvcObj && this.res.mvcObj.params) {
+                    this.req.params = this.res.mvcObj.params;
+                }
+                if (typeof params === 'object') {
+                    this.req.params = params;
+                }
+                let err = loadMVC(url, this.req, this.res, this.next);
+                if (err instanceof Error) {
+                    this.next(err);
+                }
+            };
             app.use(function(req, res, next) {
-                res.forward = function(url, params) {
-                    if (res.mvcObj && res.mvcObj.params) {
-                        req.params = res.mvcObj.params;
-                    }
-                    if (typeof params === 'object') {
-                        req.params = params;
-                    }
-                    let err = loadMVC(url, req, res, next);
-                    if (err instanceof Error) {
-                        next(err);
-                    }
-                };
+                res.forward = forward.bind({req, res, next});
                 next();
+            });
+            app.use(function(err, req, res, next) {
+                if(!res.forward) res.forward = forward.bind({req, res, next});
+                next(err);
             });
             // 0. 认证模块.
             if (pluginConf.auth.enabled) {
@@ -540,6 +628,8 @@ module.exports = function(app, pluginConf) {
             app.engine('njk', nunjucks.render);
             app.engine('ejs', require('ejs').renderFile);
 
+            this.setAppContext('getAssetUrl', setupAsset(pluginConf.assets));
+
             // 加载认证模块.
             if (pluginConf.auth.enabled) {
                 this.setAppContext('UserAuth', require(pluginConf.auth.module)(pluginConf.auth));
@@ -550,12 +640,16 @@ module.exports = function(app, pluginConf) {
                 this.setAppContext('config', appConfig);
             }
             this.setAppContext('createService', pluginObj.createService);
+            global.importModel = importModel; // 全局注入一些方法.
             if (options.contexts) {
                 for (let name in options.contexts) {
-                    this.setAppContext(name, options.contexts[name]);
+                    let context = options.contexts[name];
+                    if (typeof context === 'function') {
+                        context = context(importModel);
+                    }
+                    this.setAppContext(name, context);
                 }
             }
-            global.importModel = importModel; // 全局注入一些方法.
             preLoadBundles(this); // 预加载bundle.
             return true;
         },
