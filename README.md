@@ -6,9 +6,9 @@ A lightweight web framework based on Node.js and Express.js
 
 ## Intallation.
 
->cnpm install express
+>npm install express
 >
->cnpm install bootjs
+>npm install bootjs
 
 Or you can create a package.json as below:
 ``` json
@@ -29,7 +29,7 @@ Or you can create a package.json as below:
 }
 ```
 then run 
-> cnpm i
+> npm i
 
 ## Quickstart.
 
@@ -48,7 +48,6 @@ package.json
 
 ### Step 2: Edit config.js
 ``` javascript
-'use strict';
 module.exports = {
     baseDir: __dirname + '/app/src/' // Mandatory item.
 }
@@ -57,8 +56,6 @@ module.exports = {
 ### Step 3: Edit app.js
 
 ``` node
-'use strict';
-
 const express = require('express');
 const app = express();
 const Bootjs = require('bootjs');
@@ -81,7 +78,6 @@ app.listen(5000, () => {
 
 #### Create IndexController.js under app/src/ as below:
 ``` node 
-'use strict';
 module.exports = class {
     index() {
         this.res.end('Hello Bootjs');
