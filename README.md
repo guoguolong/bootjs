@@ -90,6 +90,6 @@ module.exports = class {
 Enter project folder then run 
 >node app.js
 
-Go to browser and enter <http://localhost:5000>, you will got a page which say 'Hello Bootjs'.
+Go to browser and enter <http://localhost:5000>, The page will response 'Hello Bootjs'.
 
 [MIT](LICENSE)
